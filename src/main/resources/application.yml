@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: windcore-demo
+  profiles:
+    active: test
+  servlet:
+    multipart:
+      max-file-size: 20MB    # 单个文件大小限制
+      max-request-size: 50MB # 总请求大小限制
+  # 内容协商配置
+  mvc:
+    contentnegotiation:
+      favor-parameter: true  # 启用查询参数协商
+      parameter-name: format # 参数名称
+      favor-path-extension: true # 启用路径扩展协商（不推荐）
+
+server:
+  port: 8081

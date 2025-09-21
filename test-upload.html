@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件上传测试</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>文件上传测试</h1>
+    
+    <div>
+        <h2>测试方案1：使用 /upload 接口（推荐）</h2>
+        <button id="testUpload1">测试上传方案1</button>
+        <div id="result1"></div>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <h2>测试方案2：使用 /upload2 接口</h2>
+        <button id="testUpload2">测试上传方案2</button>
+        <div id="result2"></div>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <h2>手动文件选择测试</h2>
+        <input type="file" id="fileInput" />
+        <input type="text" id="userName" placeholder="用户名" value="张三" />
+        <input type="number" id="userAge" placeholder="年龄" value="25" />
+        <button id="manualUpload">上传文件</button>
+        <div id="manualResult"></div>
+    </div>
+
+    <script>
+        // 测试方案1：/upload 接口
+        document.getElementById('testUpload1').addEventListener('click', async () => {
+            try {
+                const formdata = new FormData();
+                formdata.append('file', new Blob(['这是测试文件内容']), 'test.txt');
+                formdata.append("user", JSON.stringify({name:'王五', age:30}));
+                
+                const response = await axios.post('http://localhost:8081/upload', formdata);
+                document.getElementById('result1').innerHTML = `<p style="color: green;">成功: ${response.data}</p>`;
+            } catch (error) {
+                document.getElementById('result1').innerHTML = `<p style="color: red;">错误: ${error.message}</p>`;
+                console.error('上传错误:', error);
+            }
+        });
+
+        // 测试方案2：/upload2 接口
+        document.getElementById('testUpload2').addEventListener('click', async () => {
+            try {
+                const formdata = new FormData();
+                formdata.append('file', new Blob(['这是测试文件内容方案2']), 'test2.txt');
+                formdata.append("user", new Blob([JSON.stringify({name:'李四', age:28})], {type: 'application/json'}));
+                
+                const response = await axios.post('http://localhost:8081/upload2', formdata);
+                document.getElementById('result2').innerHTML = `<p style="color: green;">成功: ${response.data}</p>`;
+            } catch (error) {
+                document.getElementById('result2').innerHTML = `<p style="color: red;">错误: ${error.message}</p>`;
+                console.error('上传错误:', error);
+            }
+        });
+
+        // 手动文件选择测试
+        document.getElementById('manualUpload').addEventListener('click', async () => {
+            try {
+                const fileInput = document.getElementById('fileInput');
+                const userName = document.getElementById('userName').value;
+                const userAge = document.getElementById('userAge').value;
+                
+                if (!fileInput.files[0]) {
+                    alert('请选择文件');
+                    return;
+                }
+                
+                const formdata = new FormData();
+                formdata.append('file', fileInput.files[0]);
+                formdata.append("user", JSON.stringify({name: userName, age: parseInt(userAge)}));
+                
+                const response = await axios.post('http://localhost:8081/upload', formdata);
+                document.getElementById('manualResult').innerHTML = `<p style="color: green;">成功: ${response.data}</p>`;
+            } catch (error) {
+                document.getElementById('manualResult').innerHTML = `<p style="color: red;">错误: ${error.message}</p>`;
+                console.error('上传错误:', error);
+            }
+        });
+    </script>
+</body>
+</html>

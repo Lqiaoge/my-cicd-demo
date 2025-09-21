@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload2接口测试</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Upload2接口专用测试</h1>
+    
+    <div>
+        <h2>测试 /upload2 接口（使用RequestPart接收User对象）</h2>
+        <p>这个接口现在应该能正确处理JSON Blob了，因为我们已经配置了消息转换器</p>
+        <button id="testUpload2">测试 Upload2 接口</button>
+        <div id="result2" style="margin-top: 10px; padding: 10px; border: 1px solid #ccc;"></div>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <h2>原始 /upload 接口（作为对比）</h2>
+        <button id="testUpload1">测试原始 Upload 接口</button>
+        <div id="result1" style="margin-top: 10px; padding: 10px; border: 1px solid #ccc;"></div>
+    </div>
+
+    <script>
+        // 测试 /upload2 接口
+        document.getElementById('testUpload2').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result2');
+            resultDiv.innerHTML = '<p style="color: blue;">正在测试...</p>';
+            
+            try {
+                const formdata = new FormData();
+                
+                // 添加文件
+                formdata.append('file', new Blob(['这是upload2接口的测试文件内容']), 'upload2-test.txt');
+                
+                // 关键：为了使RequestPart能够正确处理JSON，我们需要发送带有正确Content-Type的Blob
+                const userJson = JSON.stringify({name: '张三', age: 25});
+                const userBlob = new Blob([userJson], {type: 'application/json'});
+                formdata.append('user', userBlob);
+                
+                console.log('发送upload2请求...');
+                const response = await axios.post('http://localhost:8081/upload2', formdata);
+                
+                resultDiv.innerHTML = `
+                    <p style="color: green;"><strong>✅ 成功！</strong></p>
+                    <p><strong>响应数据：</strong> ${response.data}</p>
+                    <p><strong>状态码：</strong> ${response.status}</p>
+                `;
+            } catch (error) {
+                console.error('Upload2错误:', error);
+                resultDiv.innerHTML = `
+                    <p style="color: red;"><strong>❌ 失败！</strong></p>
+                    <p><strong>错误信息：</strong> ${error.message}</p>
+                    <p><strong>详细错误：</strong> ${error.response ? error.response.data : '网络错误'}</p>
+                `;
+            }
+        });
+
+        // 测试原始 /upload 接口作为对比
+        document.getElementById('testUpload1').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result1');
+            resultDiv.innerHTML = '<p style="color: blue;">正在测试...</p>';
+            
+            try {
+                const formdata = new FormData();
+                formdata.append('file', new Blob(['这是原始upload接口的测试文件内容']), 'upload1-test.txt');
+                formdata.append("user", JSON.stringify({name:'李四', age:30}));
+                
+                console.log('发送upload请求...');
+                const response = await axios.post('http://localhost:8081/upload', formdata);
+                
+                resultDiv.innerHTML = `
+                    <p style="color: green;"><strong>✅ 成功！</strong></p>
+                    <p><strong>响应数据：</strong> ${response.data}</p>
+                    <p><strong>状态码：</strong> ${response.status}</p>
+                `;
+            } catch (error) {
+                console.error('Upload错误:', error);
+                resultDiv.innerHTML = `
+                    <p style="color: red;"><strong>❌ 失败！</strong></p>
+                    <p><strong>错误信息：</strong> ${error.message}</p>
+                    <p><strong>详细错误：</strong> ${error.response ? error.response.data : '网络错误'}</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test2Controller DTO测试</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Test2Controller DTO参数接收测试</h1>
+    
+    <div style="margin-bottom: 20px;">
+        <h2>测试 /test2/demo 接口</h2>
+        <p>测试UserDto对象是否能正确接收JSON参数</p>
+        
+        <div style="margin-bottom: 10px;">
+            <label>用户名 (3-20字符):</label>
+            <input type="text" id="username" value="testuser" />
+        </div>
+        
+        <div style="margin-bottom: 10px;">
+            <label>密码 (8位以上，包含字母和数字):</label>
+            <input type="text" id="password" value="test1234" />
+        </div>
+        
+        <div style="margin-bottom: 10px;">
+            <label>邮箱:</label>
+            <input type="email" id="email" value="test@example.com" />
+        </div>
+        
+        <button id="testDemo">发送JSON请求</button>
+        <button id="testDemoInvalid">发送无效数据测试校验</button>
+        
+        <div id="result" style="margin-top: 15px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9;"></div>
+    </div>
+
+    <div style="margin-top: 30px;">
+        <h3>请求详情预览</h3>
+        <pre id="requestPreview" style="background: #f0f0f0; padding: 10px; border-radius: 4px;"></pre>
+    </div>
+
+    <script>
+        function updatePreview() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+            
+            const requestData = {
+                username: username,
+                password: password,
+                email: email
+            };
+            
+            const preview = `请求URL: POST http://localhost:8081/test2/demo
+Content-Type: application/json
+
+请求体:
+${JSON.stringify(requestData, null, 2)}`;
+            
+            document.getElementById('requestPreview').textContent = preview;
+        }
+
+        // 初始化预览
+        updatePreview();
+        
+        // 监听输入变化
+        ['username', 'password', 'email'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updatePreview);
+        });
+
+        // 测试有效数据
+        document.getElementById('testDemo').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p style="color: blue;">正在发送请求...</p>';
+            
+            try {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const email = document.getElementById('email').value;
+                
+                const requestData = {
+                    username: username,
+                    password: password,
+                    email: email
+                };
+                
+                console.log('发送请求数据:', requestData);
+                
+                const response = await axios.post('http://localhost:8081/test2/demo', requestData, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                resultDiv.innerHTML = `
+                    <p style="color: green;"><strong>✅ 请求成功！</strong></p>
+                    <p><strong>响应数据：</strong> ${response.data}</p>
+                    <p><strong>状态码：</strong> ${response.status}</p>
+                    <p><strong>发送的数据：</strong> ${JSON.stringify(requestData)}</p>
+                `;
+                
+                console.log('响应:', response);
+                
+            } catch (error) {
+                console.error('请求错误:', error);
+                
+                let errorMessage = error.message;
+                let errorDetails = '';
+                
+                if (error.response) {
+                    errorDetails = `
+                        <p><strong>状态码：</strong> ${error.response.status}</p>
+                        <p><strong>错误详情：</strong> ${JSON.stringify(error.response.data, null, 2)}</p>
+                    `;
+                }
+                
+                resultDiv.innerHTML = `
+                    <p style="color: red;"><strong>❌ 请求失败！</strong></p>
+                    <p><strong>错误信息：</strong> ${errorMessage}</p>
+                    ${errorDetails}
+                `;
+            }
+        });
+
+        // 测试无效数据（触发校验）
+        document.getElementById('testDemoInvalid').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p style="color: blue;">正在发送无效数据测试校验...</p>';
+            
+            try {
+                const requestData = {
+                    username: "ab", // 太短，应该报错
+                    password: "123", // 不符合格式，应该报错
+                    email: "invalid-email" // 邮箱格式错误
+                };
+                
+                console.log('发送无效数据:', requestData);
+                
+                const response = await axios.post('http://localhost:8081/test2/demo', requestData, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                resultDiv.innerHTML = `
+                    <p style="color: orange;"><strong>⚠️ 意外成功（可能校验未生效）</strong></p>
+                    <p><strong>响应数据：</strong> ${response.data}</p>
+                    <p><strong>状态码：</strong> ${response.status}</p>
+                `;
+                
+            } catch (error) {
+                console.error('校验错误（这是预期的）:', error);
+                
+                if (error.response && error.response.status === 400) {
+                    resultDiv.innerHTML = `
+                        <p style="color: green;"><strong>✅ 校验正常工作！</strong></p>
+                        <p><strong>校验错误详情：</strong></p>
+                        <pre style="background: #ffe6e6; padding: 10px; border-radius: 4px;">${JSON.stringify(error.response.data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p style="color: red;"><strong>❌ 意外错误</strong></p>
+                        <p><strong>错误信息：</strong> ${error.message}</p>
+                        <p><strong>状态码：</strong> ${error.response ? error.response.status : 'N/A'}</p>
+                    `;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
