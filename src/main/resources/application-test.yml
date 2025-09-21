@@ -1,0 +1,8 @@
+demo:
+  test:
+    name: windcore-demo-test
+    age: 19
+    appName: ${WINDCORE_ENCRYPTOR_PASSWORD}
+    info:
+      phone: 13888888888
+      email: 13888888888@163.com
