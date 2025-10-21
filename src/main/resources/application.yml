@@ -5,8 +5,11 @@ spring:
     active: test
   servlet:
     multipart:
-      max-file-size: 20MB    # 单个文件大小限制
-      max-request-size: 50MB # 总请求大小限制
+      enabled: true
+      max-file-size: 50MB
+      max-request-size: 100MB
+      location: D:\\temp
+      file-size-threshold: 40KB
   # 内容协商配置
   mvc:
     contentnegotiation:
@@ -27,6 +30,11 @@ spring:
 
 server:
   port: 8081
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 # Jasypt 配置加密
 jasypt:
   encryptor:
@@ -49,3 +57,7 @@ jasypt:
       prefix: ENC(
       suffix: )
     password: ${WINDCORE_ENCRYPTOR_PASSWORD}
+
+file:
+  upload:
+    dir: D:\\temp
