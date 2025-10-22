@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redis连接测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            min-height: 20px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔴 Redis连接测试</h1>
+        
+        <!-- 连接测试 -->
+        <div class="test-section">
+            <h3>1. 连接测试</h3>
+            <button onclick="testConnection()">测试Redis连接</button>
+            <div id="connectionResult" class="result"></div>
+        </div>
+
+        <!-- 设置值 -->
+        <div class="test-section">
+            <h3>2. 设置键值对</h3>
+            <div class="form-group">
+                <label for="setKey">键 (Key):</label>
+                <input type="text" id="setKey" placeholder="例如: user:123">
+            </div>
+            <div class="form-group">
+                <label for="setValue">值 (Value):</label>
+                <input type="text" id="setValue" placeholder="例如: 张三">
+            </div>
+            <button onclick="setValue()">设置值</button>
+            <div id="setResult" class="result"></div>
+        </div>
+
+        <!-- 获取值 -->
+        <div class="test-section">
+            <h3>3. 获取值</h3>
+            <div class="form-group">
+                <label for="getKey">键 (Key):</label>
+                <input type="text" id="getKey" placeholder="例如: user:123">
+            </div>
+            <button onclick="getValue()">获取值</button>
+            <div id="getResult" class="result"></div>
+        </div>
+
+        <!-- 删除键 -->
+        <div class="test-section">
+            <h3>4. 删除键</h3>
+            <div class="form-group">
+                <label for="deleteKey">键 (Key):</label>
+                <input type="text" id="deleteKey" placeholder="例如: user:123">
+            </div>
+            <button onclick="deleteKey()">删除键</button>
+            <div id="deleteResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = 'http://localhost:8081/api/redis';
+
+        function showResult(elementId, message, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = 'result ' + (isSuccess ? 'success' : 'error');
+        }
+
+        async function testConnection() {
+            try {
+                const response = await fetch(`${baseUrl}/test`);
+                const result = await response.text();
+                showResult('connectionResult', result, response.ok);
+            } catch (error) {
+                showResult('connectionResult', '请求失败: ' + error.message, false);
+            }
+        }
+
+        async function setValue() {
+            const key = document.getElementById('setKey').value.trim();
+            const value = document.getElementById('setValue').value.trim();
+            
+            if (!key || !value) {
+                showResult('setResult', '请输入键和值', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${baseUrl}/set?key=${encodeURIComponent(key)}&value=${encodeURIComponent(value)}`, {
+                    method: 'POST'
+                });
+                const result = await response.text();
+                showResult('setResult', result, response.ok);
+            } catch (error) {
+                showResult('setResult', '请求失败: ' + error.message, false);
+            }
+        }
+
+        async function getValue() {
+            const key = document.getElementById('getKey').value.trim();
+            
+            if (!key) {
+                showResult('getResult', '请输入键', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${baseUrl}/get?key=${encodeURIComponent(key)}`);
+                const result = await response.text();
+                showResult('getResult', result, response.ok);
+            } catch (error) {
+                showResult('getResult', '请求失败: ' + error.message, false);
+            }
+        }
+
+        async function deleteKey() {
+            const key = document.getElementById('deleteKey').value.trim();
+            
+            if (!key) {
+                showResult('deleteResult', '请输入键', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${baseUrl}/delete?key=${encodeURIComponent(key)}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.text();
+                showResult('deleteResult', result, response.ok);
+            } catch (error) {
+                showResult('deleteResult', '请求失败: ' + error.message, false);
+            }
+        }
+    </script>
+</body>
+</html>
