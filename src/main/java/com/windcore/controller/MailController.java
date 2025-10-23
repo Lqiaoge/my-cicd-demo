@@ -4,8 +4,17 @@ import com.windcore.model.MailAttachment;
 import com.windcore.model.MailMessage;
 import com.windcore.service.MailQueueService;
 import com.windcore.service.MailService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +32,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/mail")
 @RequiredArgsConstructor
+@Tag(name = "邮件服务", description = "提供邮件发送、状态查询、队列管理等功能")
 public class MailController {
 
     private final MailService mailService;
@@ -31,8 +41,53 @@ public class MailController {
     /**
      * 发送简单文本邮件
      */
+    @Operation(
+        summary = "发送简单文本邮件",
+        description = "发送纯文本格式的邮件，适用于简单的通知和消息发送",
+        tags = {"邮件发送"}
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "邮件发送成功",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = Map.class),
+                examples = @ExampleObject(
+                    name = "成功响应",
+                    value = """
+                    {
+                        "success": true,
+                        "message": "简单邮件发送成功",
+                        "messageId": "uuid-string",
+                        "timestamp": "2024-01-01T12:00:00"
+                    }
+                    """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "邮件发送失败",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                examples = @ExampleObject(
+                    name = "失败响应",
+                    value = """
+                    {
+                        "success": false,
+                        "message": "发送失败: 邮箱地址格式错误",
+                        "timestamp": "2024-01-01T12:00:00"
+                    }
+                    """
+                )
+            )
+        )
+    })
     @PostMapping("/send/simple")
-    public ResponseEntity<Map<String, Object>> sendSimpleMail(@RequestBody SimpleMailRequest request) {
+    public ResponseEntity<Map<String, Object>> sendSimpleMail(
+        @Parameter(description = "简单邮件请求参数", required = true)
+        @RequestBody SimpleMailRequest request) {
         try {
             String messageId = mailService.sendSimpleMail(
                 request.getTo(), 
@@ -51,8 +106,19 @@ public class MailController {
     /**
      * 发送HTML邮件
      */
+    @Operation(
+        summary = "发送HTML格式邮件",
+        description = "发送富文本HTML格式的邮件，支持样式、图片、链接等HTML元素",
+        tags = {"邮件发送"}
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "HTML邮件发送成功"),
+        @ApiResponse(responseCode = "400", description = "HTML邮件发送失败")
+    })
     @PostMapping("/send/html")
-    public ResponseEntity<Map<String, Object>> sendHtmlMail(@RequestBody HtmlMailRequest request) {
+    public ResponseEntity<Map<String, Object>> sendHtmlMail(
+        @Parameter(description = "HTML邮件请求参数", required = true)
+        @RequestBody HtmlMailRequest request) {
         try {
             String messageId = mailService.sendHtmlMail(
                 request.getTo(), 
@@ -71,8 +137,19 @@ public class MailController {
     /**
      * 发送模板邮件
      */
+    @Operation(
+        summary = "发送模板邮件",
+        description = "使用预定义的邮件模板发送邮件，支持动态变量替换",
+        tags = {"邮件发送"}
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "模板邮件发送成功"),
+        @ApiResponse(responseCode = "400", description = "模板邮件发送失败")
+    })
     @PostMapping("/send/template")
-    public ResponseEntity<Map<String, Object>> sendTemplateMail(@RequestBody TemplateMailRequest request) {
+    public ResponseEntity<Map<String, Object>> sendTemplateMail(
+        @Parameter(description = "模板邮件请求参数", required = true)
+        @RequestBody TemplateMailRequest request) {
         try {
             String messageId = mailService.sendTemplateMail(
                 request.getTo(), 
@@ -92,11 +169,24 @@ public class MailController {
     /**
      * 发送带附件的邮件
      */
-    @PostMapping("/send/attachment")
+    @Operation(
+        summary = "发送带附件的邮件",
+        description = "发送包含文件附件的邮件，支持多个附件上传",
+        tags = {"邮件发送"}
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "带附件邮件发送成功"),
+        @ApiResponse(responseCode = "400", description = "带附件邮件发送失败")
+    })
+    @PostMapping(value = "/send/attachment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, Object>> sendMailWithAttachment(
+            @Parameter(description = "收件人邮箱地址", required = true)
             @RequestParam("to") String to,
+            @Parameter(description = "邮件主题", required = true)
             @RequestParam("subject") String subject,
+            @Parameter(description = "邮件内容", required = true)
             @RequestParam("content") String content,
+            @Parameter(description = "附件文件列表", required = true)
             @RequestParam("files") MultipartFile[] files) {
         
         try {
@@ -171,8 +261,19 @@ public class MailController {
     /**
      * 异步发送邮件（添加到队列）
      */
+    @Operation(
+        summary = "异步发送邮件",
+        description = "将邮件添加到发送队列中进行异步处理，适用于大批量邮件发送",
+        tags = {"邮件队列"}
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "邮件已成功添加到发送队列"),
+        @ApiResponse(responseCode = "400", description = "添加邮件到队列失败")
+    })
     @PostMapping("/send/async")
-    public ResponseEntity<Map<String, Object>> sendAsyncMail(@RequestBody AsyncMailRequest request) {
+    public ResponseEntity<Map<String, Object>> sendAsyncMail(
+        @Parameter(description = "异步邮件请求参数", required = true)
+        @RequestBody AsyncMailRequest request) {
         try {
             MailMessage mailMessage = new MailMessage();
             mailMessage.setId(UUID.randomUUID().toString());
@@ -200,8 +301,19 @@ public class MailController {
     /**
      * 获取邮件状态
      */
+    @Operation(
+        summary = "获取邮件发送状态",
+        description = "根据邮件ID查询邮件的当前发送状态",
+        tags = {"邮件状态"}
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "成功获取邮件状态"),
+        @ApiResponse(responseCode = "400", description = "获取邮件状态失败")
+    })
     @GetMapping("/status/{messageId}")
-    public ResponseEntity<Map<String, Object>> getMailStatus(@PathVariable String messageId) {
+    public ResponseEntity<Map<String, Object>> getMailStatus(
+        @Parameter(description = "邮件消息ID", required = true, example = "uuid-string")
+        @PathVariable String messageId) {
         try {
             MailMessage mailMessage = mailService.getMailStatus(messageId);
             
@@ -242,8 +354,19 @@ public class MailController {
     /**
      * 重新发送失败的邮件
      */
+    @Operation(
+        summary = "重新发送失败的邮件",
+        description = "重新发送之前发送失败的邮件",
+        tags = {"邮件管理"}
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "邮件重新发送成功"),
+        @ApiResponse(responseCode = "400", description = "邮件重新发送失败")
+    })
     @PostMapping("/resend/{messageId}")
-    public ResponseEntity<Map<String, Object>> resendMail(@PathVariable String messageId) {
+    public ResponseEntity<Map<String, Object>> resendMail(
+        @Parameter(description = "邮件消息ID", required = true, example = "uuid-string")
+        @PathVariable String messageId) {
         try {
             boolean success = mailService.resendMail(messageId);
             
@@ -262,8 +385,19 @@ public class MailController {
     /**
      * 取消待发送的邮件
      */
+    @Operation(
+        summary = "取消待发送的邮件",
+        description = "取消队列中尚未发送的邮件",
+        tags = {"邮件管理"}
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "邮件取消成功"),
+        @ApiResponse(responseCode = "400", description = "邮件取消失败")
+    })
     @PostMapping("/cancel/{messageId}")
-    public ResponseEntity<Map<String, Object>> cancelMail(@PathVariable String messageId) {
+    public ResponseEntity<Map<String, Object>> cancelMail(
+        @Parameter(description = "邮件消息ID", required = true, example = "uuid-string")
+        @PathVariable String messageId) {
         try {
             boolean success = mailService.cancelMail(messageId);
             
@@ -282,6 +416,15 @@ public class MailController {
     /**
      * 测试邮件服务连接
      */
+    @Operation(
+        summary = "测试邮件服务连接",
+        description = "测试邮件服务器连接是否正常",
+        tags = {"邮件管理"}
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "邮件服务连接正常"),
+        @ApiResponse(responseCode = "400", description = "邮件服务连接失败")
+    })
     @GetMapping("/test")
     public ResponseEntity<Map<String, Object>> testMailService() {
         try {
@@ -325,9 +468,13 @@ public class MailController {
     }
 
     // 请求DTO类
+    @Schema(description = "简单邮件请求参数")
     public static class SimpleMailRequest {
+        @Schema(description = "收件人邮箱地址", example = "user@example.com", required = true)
         private String to;
+        @Schema(description = "邮件主题", example = "测试邮件", required = true)
         private String subject;
+        @Schema(description = "邮件内容", example = "这是一封测试邮件", required = true)
         private String content;
         
         // Getters and Setters
@@ -339,9 +486,13 @@ public class MailController {
         public void setContent(String content) { this.content = content; }
     }
 
+    @Schema(description = "HTML邮件请求参数")
     public static class HtmlMailRequest {
+        @Schema(description = "收件人邮箱地址", example = "user@example.com", required = true)
         private String to;
+        @Schema(description = "邮件主题", example = "HTML测试邮件", required = true)
         private String subject;
+        @Schema(description = "HTML邮件内容", example = "<h1>这是HTML邮件</h1><p>支持富文本格式</p>", required = true)
         private String htmlContent;
         
         // Getters and Setters
@@ -353,10 +504,15 @@ public class MailController {
         public void setHtmlContent(String htmlContent) { this.htmlContent = htmlContent; }
     }
 
+    @Schema(description = "模板邮件请求参数")
     public static class TemplateMailRequest {
+        @Schema(description = "收件人邮箱地址", example = "user@example.com", required = true)
         private String to;
+        @Schema(description = "邮件主题", example = "模板邮件", required = true)
         private String subject;
+        @Schema(description = "邮件模板名称", example = "welcome", required = true)
         private String templateName;
+        @Schema(description = "模板变量数据", example = "{\"username\": \"张三\", \"code\": \"123456\"}")
         private Map<String, Object> templateData;
         
         // Getters and Setters
@@ -384,15 +540,25 @@ public class MailController {
         public void setContent(String content) { this.content = content; }
     }
 
+    @Schema(description = "异步邮件请求参数")
     public static class AsyncMailRequest {
+        @Schema(description = "收件人邮箱地址", example = "user@example.com", required = true)
         private String to;
+        @Schema(description = "抄送邮箱地址", example = "cc@example.com")
         private String cc;
+        @Schema(description = "密送邮箱地址", example = "bcc@example.com")
         private String bcc;
+        @Schema(description = "邮件主题", example = "异步邮件", required = true)
         private String subject;
+        @Schema(description = "邮件内容", example = "这是一封异步发送的邮件")
         private String content;
+        @Schema(description = "邮件模板名称", example = "notification")
         private String templateName;
+        @Schema(description = "模板变量数据")
         private Map<String, Object> templateData;
+        @Schema(description = "邮件优先级 (1-5, 1最高)", example = "3", minimum = "1", maximum = "5")
         private Integer priority;
+        @Schema(description = "最大重试次数", example = "3", minimum = "0")
         private Integer maxRetryCount;
         
         // Getters and Setters

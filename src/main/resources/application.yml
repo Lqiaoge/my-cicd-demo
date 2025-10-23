@@ -115,3 +115,31 @@ mail:
     max-pool-size: 10
     queue-capacity: 100
     thread-name-prefix: "mail-async-"
+
+# SpringDoc OpenAPI 配置
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+    display-request-duration: true
+    display-operation-id: true
+    default-models-expand-depth: 1
+    default-model-expand-depth: 1
+    doc-expansion: none
+    filter: false
+    show-extensions: true
+    show-common-extensions: true
+    try-it-out-enabled: true
+    persist-authorization: true
+    oauth:
+      client-id: your-client-id
+      client-secret: your-client-secret
+  show-actuator: true
+  use-management-port: false
+  cache:
+    disabled: false

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API安全认证文档 - SpringBoot Study Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .section h3 {
+            color: #34495e;
+            margin: 25px 0 15px 0;
+        }
+
+        .section p {
+            color: #7f8c8d;
+            margin-bottom: 15px;
+        }
+
+        .auth-method {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+
+        .auth-method h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+        }
+
+        .example {
+            background: #e8f5e8;
+            border: 1px solid #27ae60;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .example h5 {
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .warning h5 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #17a2b8;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .info h5 {
+            color: #0c5460;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            margin: 10px 10px 10px 0;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .status-code {
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: white;
+        }
+
+        .status-200 { background-color: #27ae60; }
+        .status-400 { background-color: #e74c3c; }
+        .status-401 { background-color: #f39c12; }
+        .status-403 { background-color: #e67e22; }
+        .status-500 { background-color: #8e44ad; }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 API安全认证文档</h1>
+            <p>SpringBoot Study Demo - 安全认证指南</p>
+        </div>
+
+        <div class="main-content">
+            <div class="section">
+                <h2>概述</h2>
+                <p>本文档详细说明了SpringBoot Study Demo项目中API的安全认证机制。当前项目主要用于学习和演示，大部分API暂时未启用严格的认证机制，但提供了完整的安全配置示例和最佳实践。</p>
+                
+                <div class="info">
+                    <h5>📋 当前状态</h5>
+                    <p>项目当前处于开发演示阶段，大部分API端点允许匿名访问以便于测试和学习。在生产环境中，建议根据实际需求启用相应的安全认证机制。</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>支持的认证方式</h2>
+                
+                <div class="auth-method">
+                    <h4>1. 无认证访问 (当前默认)</h4>
+                    <p>大部分API端点当前允许无认证访问，适用于开发和测试环境。</p>
+                    
+                    <div class="example">
+                        <h5>示例请求</h5>
+                        <div class="code-block">
+curl -X GET "http://localhost:8080/test/getUser/123" \
+     -H "Accept: application/json"</div>
+                    </div>
+                </div>
+
+                <div class="auth-method">
+                    <h4>2. API Key认证 (可配置)</h4>
+                    <p>通过在请求头中添加API Key进行身份验证。</p>
+                    
+                    <div class="example">
+                        <h5>请求头配置</h5>
+                        <div class="code-block">
+X-API-Key: your-api-key-here
+Content-Type: application/json</div>
+                    </div>
+                    
+                    <div class="example">
+                        <h5>示例请求</h5>
+                        <div class="code-block">
+curl -X POST "http://localhost:8080/api/mail/send" \
+     -H "X-API-Key: demo-api-key-123" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "to": "user@example.com",
+       "subject": "测试邮件",
+       "content": "这是一封测试邮件"
+     }'</div>
+                    </div>
+                </div>
+
+                <div class="auth-method">
+                    <h4>3. JWT Token认证 (推荐用于生产)</h4>
+                    <p>使用JSON Web Token进行无状态身份验证，适用于分布式系统。</p>
+                    
+                    <div class="example">
+                        <h5>获取Token</h5>
+                        <div class="code-block">
+POST /auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "password"
+}
+
+响应:
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expiresIn": 3600
+}</div>
+                    </div>
+                    
+                    <div class="example">
+                        <h5>使用Token访问API</h5>
+                        <div class="code-block">
+curl -X GET "http://localhost:8080/api/secure/data" \
+     -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+     -H "Content-Type: application/json"</div>
+                    </div>
+                </div>
+
+                <div class="auth-method">
+                    <h4>4. Basic Authentication (简单认证)</h4>
+                    <p>使用用户名和密码进行基础认证，适用于内部系统。</p>
+                    
+                    <div class="example">
+                        <h5>示例请求</h5>
+                        <div class="code-block">
+curl -X GET "http://localhost:8080/admin/stats" \
+     -u "admin:password" \
+     -H "Content-Type: application/json"</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>API端点安全级别</h2>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>API分组</th>
+                            <th>端点示例</th>
+                            <th>当前安全级别</th>
+                            <th>推荐生产级别</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>邮件服务</td>
+                            <td>/api/mail/*</td>
+                            <td>无认证</td>
+                            <td>API Key / JWT</td>
+                        </tr>
+                        <tr>
+                            <td>文件服务</td>
+                            <td>/api/file/*</td>
+                            <td>无认证</td>
+                            <td>JWT + 权限控制</td>
+                        </tr>
+                        <tr>
+                            <td>Redis服务</td>
+                            <td>/api/redis/*</td>
+                            <td>无认证</td>
+                            <td>JWT + 管理员权限</td>
+                        </tr>
+                        <tr>
+                            <td>测试接口</td>
+                            <td>/test/*, /test2/*</td>
+                            <td>无认证</td>
+                            <td>开发环境专用</td>
+                        </tr>
+                        <tr>
+                            <td>系统监控</td>
+                            <td>/actuator/*</td>
+                            <td>部分保护</td>
+                            <td>Basic Auth</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <h2>错误响应</h2>
+                
+                <h3>认证失败响应格式</h3>
+                <div class="code-block">
+{
+  "timestamp": "2024-01-15T10:30:00.000+00:00",
+  "status": 401,
+  "error": "Unauthorized",
+  "message": "认证失败：无效的API Key",
+  "path": "/api/mail/send"
+}</div>
+
+                <h3>常见状态码</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>状态码</th>
+                            <th>说明</th>
+                            <th>常见原因</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="status-code status-200">200</span></td>
+                            <td>请求成功</td>
+                            <td>认证通过，操作成功</td>
+                        </tr>
+                        <tr>
+                            <td><span class="status-code status-400">400</span></td>
+                            <td>请求错误</td>
+                            <td>参数格式错误，缺少必要字段</td>
+                        </tr>
+                        <tr>
+                            <td><span class="status-code status-401">401</span></td>
+                            <td>未授权</td>
+                            <td>缺少认证信息或认证失败</td>
+                        </tr>
+                        <tr>
+                            <td><span class="status-code status-403">403</span></td>
+                            <td>禁止访问</td>
+                            <td>权限不足，无法访问资源</td>
+                        </tr>
+                        <tr>
+                            <td><span class="status-code status-500">500</span></td>
+                            <td>服务器错误</td>
+                            <td>服务器内部错误</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <h2>安全最佳实践</h2>
+                
+                <div class="warning">
+                    <h5>⚠️ 生产环境注意事项</h5>
+                    <ul>
+                        <li>启用HTTPS加密传输</li>
+                        <li>配置适当的认证机制</li>
+                        <li>实施API访问频率限制</li>
+                        <li>定期轮换API密钥</li>
+                        <li>记录和监控API访问日志</li>
+                        <li>配置CORS策略</li>
+                    </ul>
+                </div>
+
+                <h3>配置示例</h3>
+                <div class="code-block">
+# application.yml 安全配置示例
+security:
+  api:
+    key:
+      enabled: true
+      header-name: X-API-Key
+      valid-keys:
+        - demo-api-key-123
+        - prod-api-key-456
+  jwt:
+    secret: your-jwt-secret-key
+    expiration: 3600
+  cors:
+    allowed-origins: 
+      - http://localhost:3000
+      - https://yourdomain.com
+    allowed-methods: GET,POST,PUT,DELETE
+    allowed-headers: "*"</div>
+            </div>
+
+            <div class="section">
+                <h2>快速开始</h2>
+                <p>选择适合您需求的认证方式开始使用API：</p>
+                
+                <a href="/swagger-ui.html" class="btn">📖 查看API文档</a>
+                <a href="/api-docs.html" class="btn secondary">🏠 返回首页</a>
+                <a href="/actuator/health" class="btn secondary">💚 系统健康检查</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 添加代码块复制功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeBlocks = document.querySelectorAll('.code-block');
+            
+            codeBlocks.forEach(block => {
+                // 创建复制按钮
+                const copyBtn = document.createElement('button');
+                copyBtn.textContent = '复制';
+                copyBtn.style.cssText = `
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    background: #3498db;
+                    color: white;
+                    border: none;
+                    padding: 5px 10px;
+                    border-radius: 3px;
+                    cursor: pointer;
+                    font-size: 12px;
+                `;
+                
+                // 设置代码块为相对定位
+                block.style.position = 'relative';
+                block.appendChild(copyBtn);
+                
+                // 添加复制功能
+                copyBtn.addEventListener('click', function() {
+                    const text = block.textContent.replace('复制', '').trim();
+                    navigator.clipboard.writeText(text).then(() => {
+                        copyBtn.textContent = '已复制';
+                        setTimeout(() => {
+                            copyBtn.textContent = '复制';
+                        }, 2000);
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

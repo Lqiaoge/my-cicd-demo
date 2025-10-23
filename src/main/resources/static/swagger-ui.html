@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpringBoot Study Demo - API文档</title>
+    <link rel="stylesheet" type="text/css" href="/swagger-ui/swagger-ui-bundle.css" />
+    <link rel="stylesheet" type="text/css" href="/swagger-ui/swagger-ui-standalone-preset.css" />
+    <style>
+        /* 自定义样式 */
+        .swagger-ui .topbar {
+            background-color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+        }
+        
+        .swagger-ui .topbar .download-url-wrapper {
+            display: none;
+        }
+        
+        .swagger-ui .topbar-wrapper img {
+            content: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0iIzM0OThkYiIvPgo8dGV4dCB4PSIyMCIgeT0iMjYiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5BUEk8L3RleHQ+Cjwvc3ZnPgo=');
+        }
+        
+        .swagger-ui .info .title {
+            color: #2c3e50;
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+        
+        .swagger-ui .info .description {
+            color: #34495e;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        
+        .swagger-ui .scheme-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .swagger-ui .opblock.opblock-get {
+            border-color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+        
+        .swagger-ui .opblock.opblock-post {
+            border-color: #3498db;
+            background: rgba(52, 152, 219, 0.1);
+        }
+        
+        .swagger-ui .opblock.opblock-put {
+            border-color: #f39c12;
+            background: rgba(243, 156, 18, 0.1);
+        }
+        
+        .swagger-ui .opblock.opblock-delete {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        .swagger-ui .opblock-summary {
+            font-weight: 600;
+        }
+        
+        .swagger-ui .btn.authorize {
+            background-color: #3498db;
+            border-color: #3498db;
+        }
+        
+        .swagger-ui .btn.authorize:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+        
+        /* 自定义头部信息 */
+        .custom-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        
+        .custom-header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+        
+        .custom-header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .custom-header h1 {
+                font-size: 2em;
+            }
+            
+            .custom-header p {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="swagger-ui"></div>
+    
+    <script src="/swagger-ui/swagger-ui-bundle.js"></script>
+    <script src="/swagger-ui/swagger-ui-standalone-preset.js"></script>
+    <script>
+        window.onload = function() {
+            // 自定义配置
+            const ui = SwaggerUIBundle({
+                url: '/v3/api-docs',
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "StandaloneLayout",
+                // 自定义配置
+                docExpansion: "none", // 默认不展开
+                operationsSorter: "alpha", // 按字母排序
+                tagsSorter: "alpha", // 标签按字母排序
+                filter: true, // 启用过滤器
+                showRequestHeaders: true, // 显示请求头
+                showCommonExtensions: true, // 显示通用扩展
+                tryItOutEnabled: true, // 启用试用功能
+                requestInterceptor: function(request) {
+                    // 可以在这里添加全局请求拦截器
+                    console.log('API请求:', request);
+                    return request;
+                },
+                responseInterceptor: function(response) {
+                    // 可以在这里添加全局响应拦截器
+                    console.log('API响应:', response);
+                    return response;
+                },
+                // 自定义顶部信息
+                onComplete: function() {
+                    // 添加自定义头部
+                    const headerHtml = `
+                        <div class="custom-header">
+                            <h1>🚀 SpringBoot Study Demo API</h1>
+                            <p>一个功能完整的SpringBoot学习项目，包含邮件服务、文件上传、Redis缓存等功能</p>
+                        </div>
+                    `;
+                    
+                    const infoSection = document.querySelector('.swagger-ui .info');
+                    if (infoSection) {
+                        infoSection.insertAdjacentHTML('beforebegin', headerHtml);
+                    }
+                    
+                    // 修改默认的API信息显示
+                    const titleElement = document.querySelector('.swagger-ui .info .title');
+                    if (titleElement) {
+                        titleElement.style.display = 'none';
+                    }
+                }
+            });
+            
+            // 添加一些实用功能
+            window.ui = ui;
+        };
+    </script>
+</body>
+</html>
