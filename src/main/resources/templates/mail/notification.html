@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统通知</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #28a745;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        .notification-title {
+            color: #28a745;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+        .button {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 14px;
+        }
+        .details {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo" th:text="${companyName ?: '企业邮件服务'}">企业邮件服务</div>
+            <p>系统通知</p>
+        </div>
+        
+        <h2 class="notification-title" th:text="${title ?: '系统通知'}">系统通知</h2>
+        
+        <div class="content">
+            <p>亲爱的 <strong th:text="${userName ?: '用户'}">用户</strong>，</p>
+            
+            <div th:class="'alert alert-' + ${alertType ?: 'info'}" class="alert alert-info">
+                <h4><strong th:text="${alertTitle ?: '通知'}">通知</strong></h4>
+                <p th:text="${message}">这是一条系统通知消息。</p>
+            </div>
+            
+            <div class="details" th:if="${details}">
+                <h4>详细信息：</h4>
+                <div th:utext="${details}">详细信息内容</div>
+            </div>
+            
+            <div th:if="${actionUrl and actionText}">
+                <p>请点击下面的按钮进行相关操作：</p>
+                <div style="text-align: center;">
+                    <a th:href="${actionUrl}" th:text="${actionText}" class="button">立即处理</a>
+                </div>
+            </div>
+            
+            <div class="details">
+                <h4>通知详情：</h4>
+                <ul>
+                    <li><strong>通知时间：</strong> <span th:text="${notificationTime ?: #temporals.format(#temporals.createNow(), 'yyyy-MM-dd HH:mm:ss')}">通知时间</span></li>
+                    <li><strong>通知类型：</strong> <span th:text="${notificationType ?: '系统通知'}">通知类型</span></li>
+                    <li th:if="${priority}"><strong>优先级：</strong> <span th:text="${priority}">优先级</span></li>
+                </ul>
+            </div>
+            
+            <p th:if="${note}"><strong>备注：</strong> <span th:text="${note}">备注信息</span></p>
+        </div>
+        
+        <div class="footer">
+            <p>此邮件由系统自动发送，请勿回复。</p>
+            <p>&copy; 2024 <span th:text="${companyName ?: '企业邮件服务'}">企业邮件服务</span>. 保留所有权利。</p>
+            <p>如果您有任何疑问，请联系我们的技术支持团队。</p>
+        </div>
+    </div>
+</body>
+</html>

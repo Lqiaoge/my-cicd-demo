@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>邮件服务测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .status-panel {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .status-value {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .template-data {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .template-data textarea {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .file-upload {
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: border-color 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: #667eea;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .file-upload-label {
+            cursor: pointer;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .file-list {
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        .file-item {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-remove {
+            color: #dc3545;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📧 邮件服务测试</h1>
+            <p>企业级邮件服务功能测试平台</p>
+        </div>
+
+        <div class="content">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('simple')">简单邮件</button>
+                <button class="tab" onclick="switchTab('html')">HTML邮件</button>
+                <button class="tab" onclick="switchTab('template')">模板邮件</button>
+                <button class="tab" onclick="switchTab('attachment')">附件邮件</button>
+                <button class="tab" onclick="switchTab('batch')">批量邮件</button>
+                <button class="tab" onclick="switchTab('async')">异步邮件</button>
+                <button class="tab" onclick="switchTab('status')">状态监控</button>
+            </div>
+
+            <!-- 简单邮件 -->
+            <div id="simple" class="tab-content active">
+                <h3>发送简单文本邮件</h3>
+                <form id="simpleMailForm">
+                    <div class="form-group">
+                        <label for="simpleTo">收件人邮箱:</label>
+                        <input type="email" id="simpleTo" required placeholder="example@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="simpleSubject">邮件主题:</label>
+                        <input type="text" id="simpleSubject" required placeholder="请输入邮件主题">
+                    </div>
+                    <div class="form-group">
+                        <label for="simpleContent">邮件内容:</label>
+                        <textarea id="simpleContent" required placeholder="请输入邮件内容"></textarea>
+                    </div>
+                    <button type="submit" class="btn">发送邮件</button>
+                    <button type="button" class="btn btn-secondary" onclick="testConnection()">测试连接</button>
+                </form>
+                <div id="simpleResult" class="result"></div>
+            </div>
+
+            <!-- HTML邮件 -->
+            <div id="html" class="tab-content">
+                <h3>发送HTML邮件</h3>
+                <form id="htmlMailForm">
+                    <div class="form-group">
+                        <label for="htmlTo">收件人邮箱:</label>
+                        <input type="email" id="htmlTo" required placeholder="example@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="htmlSubject">邮件主题:</label>
+                        <input type="text" id="htmlSubject" required placeholder="请输入邮件主题">
+                    </div>
+                    <div class="form-group">
+                        <label for="htmlContent">HTML内容:</label>
+                        <textarea id="htmlContent" required placeholder="请输入HTML内容，例如：<h1>标题</h1><p>内容</p>"></textarea>
+                    </div>
+                    <button type="submit" class="btn">发送HTML邮件</button>
+                </form>
+                <div id="htmlResult" class="result"></div>
+            </div>
+
+            <!-- 模板邮件 -->
+            <div id="template" class="tab-content">
+                <h3>发送模板邮件</h3>
+                <form id="templateMailForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="templateTo">收件人邮箱:</label>
+                            <input type="email" id="templateTo" required placeholder="example@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="templateName">模板名称:</label>
+                            <select id="templateName" required>
+                                <option value="">请选择模板</option>
+                                <option value="welcome">欢迎邮件</option>
+                                <option value="notification">系统通知</option>
+                                <option value="password-reset">密码重置</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="templateSubject">邮件主题:</label>
+                        <input type="text" id="templateSubject" required placeholder="请输入邮件主题">
+                    </div>
+                    <div class="form-group">
+                        <label for="templateData">模板数据 (JSON格式):</label>
+                        <div class="template-data">
+                            <textarea id="templateData" placeholder='{"companyName": "WindCore", "userName": "张三", "email": "zhangsan@example.com"}'></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">发送模板邮件</button>
+                    <button type="button" class="btn btn-secondary" onclick="fillTemplateExample()">填充示例数据</button>
+                </form>
+                <div id="templateResult" class="result"></div>
+            </div>
+
+            <!-- 附件邮件 -->
+            <div id="attachment" class="tab-content">
+                <h3>发送带附件邮件</h3>
+                <form id="attachmentMailForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="attachmentTo">收件人邮箱:</label>
+                            <input type="email" id="attachmentTo" required placeholder="example@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="attachmentSubject">邮件主题:</label>
+                            <input type="text" id="attachmentSubject" required placeholder="请输入邮件主题">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="attachmentContent">邮件内容:</label>
+                        <textarea id="attachmentContent" required placeholder="请输入邮件内容"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>附件:</label>
+                        <div class="file-upload">
+                            <input type="file" id="attachmentFiles" multiple>
+                            <label for="attachmentFiles" class="file-upload-label">
+                                📎 点击选择文件或拖拽文件到此处
+                            </label>
+                            <div id="fileList" class="file-list"></div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">发送带附件邮件</button>
+                </form>
+                <div id="attachmentResult" class="result"></div>
+            </div>
+
+            <!-- 批量邮件 -->
+            <div id="batch" class="tab-content">
+                <h3>批量发送邮件</h3>
+                <form id="batchMailForm">
+                    <div class="form-group">
+                        <label for="batchToList">收件人列表 (每行一个邮箱):</label>
+                        <textarea id="batchToList" required placeholder="example1@email.com&#10;example2@email.com&#10;example3@email.com"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="batchSubject">邮件主题:</label>
+                        <input type="text" id="batchSubject" required placeholder="请输入邮件主题">
+                    </div>
+                    <div class="form-group">
+                        <label for="batchContent">邮件内容:</label>
+                        <textarea id="batchContent" required placeholder="请输入邮件内容"></textarea>
+                    </div>
+                    <button type="submit" class="btn">批量发送邮件</button>
+                </form>
+                <div id="batchResult" class="result"></div>
+            </div>
+
+            <!-- 异步邮件 -->
+            <div id="async" class="tab-content">
+                <h3>异步发送邮件</h3>
+                <form id="asyncMailForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="asyncTo">收件人邮箱:</label>
+                            <input type="email" id="asyncTo" required placeholder="example@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="asyncPriority">优先级:</label>
+                            <select id="asyncPriority">
+                                <option value="1">最高 (1)</option>
+                                <option value="2">高 (2)</option>
+                                <option value="3" selected>普通 (3)</option>
+                                <option value="4">低 (4)</option>
+                                <option value="5">最低 (5)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="asyncCc">抄送 (可选):</label>
+                            <input type="email" id="asyncCc" placeholder="cc@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="asyncBcc">密送 (可选):</label>
+                            <input type="email" id="asyncBcc" placeholder="bcc@email.com">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="asyncSubject">邮件主题:</label>
+                        <input type="text" id="asyncSubject" required placeholder="请输入邮件主题">
+                    </div>
+                    <div class="form-group">
+                        <label for="asyncContent">邮件内容:</label>
+                        <textarea id="asyncContent" required placeholder="请输入邮件内容"></textarea>
+                    </div>
+                    <button type="submit" class="btn">添加到发送队列</button>
+                </form>
+                <div id="asyncResult" class="result"></div>
+            </div>
+
+            <!-- 状态监控 -->
+            <div id="status" class="tab-content">
+                <h3>邮件服务状态监控</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="messageId">邮件ID:</label>
+                        <input type="text" id="messageId" placeholder="请输入邮件ID">
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: end;">
+                        <button type="button" class="btn" onclick="checkMailStatus()">查询邮件状态</button>
+                    </div>
+                </div>
+                
+                <div class="status-panel">
+                    <h4>队列状态</h4>
+                    <div id="queueStatus">
+                        <div class="status-item">
+                            <span class="status-label">总队列数量:</span>
+                            <span class="status-value" id="totalQueue">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">重试队列:</span>
+                            <span class="status-value" id="retryQueue">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">失败队列:</span>
+                            <span class="status-value" id="failedQueue">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">处理中:</span>
+                            <span class="status-value" id="processingCount">-</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-success" onclick="refreshQueueStatus()">刷新状态</button>
+                </div>
+
+                <div id="statusResult" class="result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 切换标签页
+        function switchTab(tabName) {
+            // 隐藏所有标签内容
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // 移除所有标签的激活状态
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // 显示选中的标签内容
+            document.getElementById(tabName).classList.add('active');
+            
+            // 激活选中的标签
+            event.target.classList.add('active');
+        }
+
+        // 显示结果
+        function showResult(elementId, message, isSuccess = true) {
+            const resultElement = document.getElementById(elementId);
+            resultElement.textContent = message;
+            resultElement.className = `result ${isSuccess ? 'success' : 'error'}`;
+            resultElement.style.display = 'block';
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                resultElement.style.display = 'none';
+            }, 5000);
+        }
+
+        // 显示加载状态
+        function showLoading(buttonElement) {
+            const originalText = buttonElement.textContent;
+            buttonElement.innerHTML = originalText + '<span class="loading"></span>';
+            buttonElement.disabled = true;
+            return originalText;
+        }
+
+        // 隐藏加载状态
+        function hideLoading(buttonElement, originalText) {
+            buttonElement.textContent = originalText;
+            buttonElement.disabled = false;
+        }
+
+        // 发送简单邮件
+        document.getElementById('simpleMailForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const button = e.target.querySelector('button[type="submit"]');
+            const originalText = showLoading(button);
+            
+            const data = {
+                to: document.getElementById('simpleTo').value,
+                subject: document.getElementById('simpleSubject').value,
+                content: document.getElementById('simpleContent').value
+            };
+            
+            try {
+                const response = await fetch('/api/mail/send/simple', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                showResult('simpleResult', result.message, result.success);
+                
+                if (result.success) {
+                    e.target.reset();
+                }
+            } catch (error) {
+                showResult('simpleResult', '发送失败: ' + error.message, false);
+            } finally {
+                hideLoading(button, originalText);
+            }
+        });
+
+        // 发送HTML邮件
+        document.getElementById('htmlMailForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const button = e.target.querySelector('button[type="submit"]');
+            const originalText = showLoading(button);
+            
+            const data = {
+                to: document.getElementById('htmlTo').value,
+                subject: document.getElementById('htmlSubject').value,
+                htmlContent: document.getElementById('htmlContent').value
+            };
+            
+            try {
+                const response = await fetch('/api/mail/send/html', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                showResult('htmlResult', result.message, result.success);
+                
+                if (result.success) {
+                    e.target.reset();
+                }
+            } catch (error) {
+                showResult('htmlResult', '发送失败: ' + error.message, false);
+            } finally {
+                hideLoading(button, originalText);
+            }
+        });
+
+        // 发送模板邮件
+        document.getElementById('templateMailForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const button = e.target.querySelector('button[type="submit"]');
+            const originalText = showLoading(button);
+            
+            let templateData = {};
+            try {
+                const templateDataText = document.getElementById('templateData').value;
+                if (templateDataText) {
+                    templateData = JSON.parse(templateDataText);
+                }
+            } catch (error) {
+                showResult('templateResult', '模板数据JSON格式错误', false);
+                hideLoading(button, originalText);
+                return;
+            }
+            
+            const data = {
+                to: document.getElementById('templateTo').value,
+                subject: document.getElementById('templateSubject').value,
+                templateName: document.getElementById('templateName').value,
+                templateData: templateData
+            };
+            
+            try {
+                const response = await fetch('/api/mail/send/template', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                showResult('templateResult', result.message, result.success);
+                
+                if (result.success) {
+                    e.target.reset();
+                }
+            } catch (error) {
+                showResult('templateResult', '发送失败: ' + error.message, false);
+            } finally {
+                hideLoading(button, originalText);
+            }
+        });
+
+        // 发送带附件邮件
+        document.getElementById('attachmentMailForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const button = e.target.querySelector('button[type="submit"]');
+            const originalText = showLoading(button);
+            
+            const formData = new FormData();
+            formData.append('to', document.getElementById('attachmentTo').value);
+            formData.append('subject', document.getElementById('attachmentSubject').value);
+            formData.append('content', document.getElementById('attachmentContent').value);
+            
+            const files = document.getElementById('attachmentFiles').files;
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+            
+            try {
+                const response = await fetch('/api/mail/send/attachment', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                showResult('attachmentResult', result.message, result.success);
+                
+                if (result.success) {
+                    e.target.reset();
+                    updateFileList();
+                }
+            } catch (error) {
+                showResult('attachmentResult', '发送失败: ' + error.message, false);
+            } finally {
+                hideLoading(button, originalText);
+            }
+        });
+
+        // 批量发送邮件
+        document.getElementById('batchMailForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const button = e.target.querySelector('button[type="submit"]');
+            const originalText = showLoading(button);
+            
+            const toListText = document.getElementById('batchToList').value;
+            const toList = toListText.split('\n').filter(email => email.trim() !== '');
+            
+            const data = {
+                toList: toList,
+                subject: document.getElementById('batchSubject').value,
+                content: document.getElementById('batchContent').value
+            };
+            
+            try {
+                const response = await fetch('/api/mail/send/batch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                showResult('batchResult', `${result.message} (发送数量: ${result.count || 0})`, result.success);
+                
+                if (result.success) {
+                    e.target.reset();
+                }
+            } catch (error) {
+                showResult('batchResult', '发送失败: ' + error.message, false);
+            } finally {
+                hideLoading(button, originalText);
+            }
+        });
+
+        // 异步发送邮件
+        document.getElementById('asyncMailForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const button = e.target.querySelector('button[type="submit"]');
+            const originalText = showLoading(button);
+            
+            const data = {
+                to: document.getElementById('asyncTo').value,
+                cc: document.getElementById('asyncCc').value || null,
+                bcc: document.getElementById('asyncBcc').value || null,
+                subject: document.getElementById('asyncSubject').value,
+                content: document.getElementById('asyncContent').value,
+                priority: parseInt(document.getElementById('asyncPriority').value),
+                maxRetryCount: 3
+            };
+            
+            try {
+                const response = await fetch('/api/mail/send/async', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                showResult('asyncResult', result.message + (result.messageId ? ` (ID: ${result.messageId})` : ''), result.success);
+                
+                if (result.success) {
+                    e.target.reset();
+                    // 自动刷新队列状态
+                    setTimeout(refreshQueueStatus, 1000);
+                }
+            } catch (error) {
+                showResult('asyncResult', '发送失败: ' + error.message, false);
+            } finally {
+                hideLoading(button, originalText);
+            }
+        });
+
+        // 测试连接
+        async function testConnection() {
+            try {
+                const response = await fetch('/api/mail/test');
+                const result = await response.json();
+                showResult('simpleResult', result.message, result.success);
+            } catch (error) {
+                showResult('simpleResult', '连接测试失败: ' + error.message, false);
+            }
+        }
+
+        // 查询邮件状态
+        async function checkMailStatus() {
+            const messageId = document.getElementById('messageId').value;
+            if (!messageId) {
+                showResult('statusResult', '请输入邮件ID', false);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/mail/status/${messageId}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult('statusResult', `邮件状态: ${result.status}`, true);
+                } else {
+                    showResult('statusResult', result.message, false);
+                }
+            } catch (error) {
+                showResult('statusResult', '查询失败: ' + error.message, false);
+            }
+        }
+
+        // 刷新队列状态
+        async function refreshQueueStatus() {
+            try {
+                const response = await fetch('/api/mail/queue/status');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const queueStatus = result.queueStatus;
+                    document.getElementById('totalQueue').textContent = queueStatus.totalQueueSize;
+                    document.getElementById('retryQueue').textContent = queueStatus.retryQueueSize;
+                    document.getElementById('failedQueue').textContent = queueStatus.failedQueueSize;
+                    document.getElementById('processingCount').textContent = queueStatus.processingCount;
+                } else {
+                    showResult('statusResult', '获取队列状态失败', false);
+                }
+            } catch (error) {
+                showResult('statusResult', '获取队列状态失败: ' + error.message, false);
+            }
+        }
+
+        // 填充模板示例数据
+        function fillTemplateExample() {
+            const templateName = document.getElementById('templateName').value;
+            let exampleData = {};
+            
+            switch (templateName) {
+                case 'welcome':
+                    exampleData = {
+                        companyName: "WindCore科技",
+                        userName: "张三",
+                        email: "zhangsan@example.com",
+                        registrationTime: "2024-01-15 10:30:00",
+                        activationUrl: "https://example.com/activate?token=abc123",
+                        unsubscribeUrl: "https://example.com/unsubscribe"
+                    };
+                    break;
+                case 'notification':
+                    exampleData = {
+                        companyName: "WindCore科技",
+                        userName: "李四",
+                        title: "系统维护通知",
+                        message: "系统将于今晚进行维护升级",
+                        alertType: "info",
+                        details: "维护时间：2024-01-15 22:00-24:00",
+                        actionUrl: "https://example.com/maintenance",
+                        actionText: "查看详情",
+                        notificationTime: "2024-01-15 18:00:00",
+                        notificationType: "系统通知",
+                        priority: "普通",
+                        notes: "如有疑问请联系技术支持"
+                    };
+                    break;
+                case 'password-reset':
+                    exampleData = {
+                        companyName: "WindCore科技",
+                        userName: "王五",
+                        resetCode: "123456",
+                        expirationTime: "30分钟",
+                        expirationMinutes: "30",
+                        resetUrl: "https://example.com/reset?token=def456",
+                        requestTime: "2024-01-15 14:30:00",
+                        requestIp: "192.168.1.100",
+                        deviceInfo: "Chrome浏览器 - Windows 10"
+                    };
+                    break;
+                default:
+                    exampleData = {
+                        companyName: "WindCore科技",
+                        userName: "用户名",
+                        email: "user@example.com"
+                    };
+            }
+            
+            document.getElementById('templateData').value = JSON.stringify(exampleData, null, 2);
+        }
+
+        // 文件上传处理
+        document.getElementById('attachmentFiles').addEventListener('change', updateFileList);
+
+        function updateFileList() {
+            const files = document.getElementById('attachmentFiles').files;
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <span>${file.name} (${formatFileSize(file.size)})</span>
+                    <span class="file-remove" onclick="removeFile(${i})">×</span>
+                `;
+                fileList.appendChild(fileItem);
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function removeFile(index) {
+            const input = document.getElementById('attachmentFiles');
+            const dt = new DataTransfer();
+            const files = input.files;
+            
+            for (let i = 0; i < files.length; i++) {
+                if (i !== index) {
+                    dt.items.add(files[i]);
+                }
+            }
+            
+            input.files = dt.files;
+            updateFileList();
+        }
+
+        // 页面加载完成后自动刷新队列状态
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshQueueStatus();
+            
+            // 每30秒自动刷新队列状态
+            setInterval(refreshQueueStatus, 30000);
+        });
+    </script>
+</body>
+</html>

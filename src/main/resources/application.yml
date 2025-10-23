@@ -75,3 +75,43 @@ jasypt:
 file:
   upload:
     dir: D:\\temp
+
+# 邮件服务配置
+mail:
+  # 邮件服务器配置
+  smtp:
+    host: smtp.qq.com  # QQ邮箱SMTP服务器
+    port: 587
+    username: your-email@qq.com  # 发送方邮箱
+    password: your-app-password   # 邮箱授权码
+    protocol: smtp
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: smtp.qq.com
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+  # 邮件模板配置
+  template:
+    cache: true
+    encoding: UTF-8
+    mode: HTML
+    prefix: classpath:/templates/mail/
+    suffix: .html
+  # 发送配置
+  sender:
+    name: "企业邮件服务"  # 发送方显示名称
+    from: your-email@qq.com  # 发送方邮箱
+  # 异步配置
+  async:
+    core-pool-size: 5
+    max-pool-size: 10
+    queue-capacity: 100
+    thread-name-prefix: "mail-async-"

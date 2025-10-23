@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欢迎邮件</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .welcome-title {
+            color: #007bff;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .highlight {
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo" th:text="${companyName ?: '企业邮件服务'}">企业邮件服务</div>
+            <p>专业的企业级邮件解决方案</p>
+        </div>
+        
+        <h2 class="welcome-title">欢迎加入我们！</h2>
+        
+        <div class="content">
+            <p>亲爱的 <strong th:text="${userName ?: '用户'}">用户</strong>，</p>
+            
+            <p>欢迎您注册成为我们的用户！我们很高兴您选择了我们的服务。</p>
+            
+            <div class="highlight">
+                <h3>您的账户信息：</h3>
+                <ul>
+                    <li><strong>用户名：</strong> <span th:text="${userName}">用户名</span></li>
+                    <li><strong>邮箱：</strong> <span th:text="${email}">邮箱地址</span></li>
+                    <li><strong>注册时间：</strong> <span th:text="${registerTime}">注册时间</span></li>
+                </ul>
+            </div>
+            
+            <p>为了确保您的账户安全，请点击下面的按钮激活您的账户：</p>
+            
+            <div style="text-align: center;">
+                <a href="#" th:href="${activationUrl}" class="button">激活账户</a>
+            </div>
+            
+            <p><strong>注意：</strong>此激活链接将在24小时后失效，请尽快完成激活。</p>
+            
+            <p>如果您有任何问题，请随时联系我们的客服团队。</p>
+        </div>
+        
+        <div class="footer">
+            <p>此邮件由系统自动发送，请勿回复。</p>
+            <p>&copy; 2024 <span th:text="${companyName ?: '企业邮件服务'}">企业邮件服务</span>. 保留所有权利。</p>
+            <p>如果您不想再收到此类邮件，请 <a href="#" th:href="${unsubscribeUrl}">取消订阅</a></p>
+        </div>
+    </div>
+</body>
+</html>
