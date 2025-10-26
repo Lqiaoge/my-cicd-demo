@@ -1,0 +1,48 @@
+name: Spring Boot CI/CD with Docker
+
+on:
+  push:
+    branches: [ "main" ]  # 仅在main分支推送时触发
+  pull_request:
+    branches: [ "main" ]  # PR到main分支时也触发（可选）
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4  # 拉取代码
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+      - name: Run unit tests
+        run: mvn test
+
+  build-and-push-docker:
+    needs: build-and-test  # 依赖测试通过后执行
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}  # 需在GitHub Secrets中配置
+          password: ${{ secrets.DOCKERHUB_TOKEN }}      # 需在GitHub Secrets中配置
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: liuqiaoyang/my-cicd-demo:${{ github.sha }}  # 镜像标签关联Commit SHA
