@@ -136,9 +136,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <!-- 移除excludes配置，让Lombok正常工作 -->
-                </configuration>
             </plugin>
         </plugins>
     </build>
